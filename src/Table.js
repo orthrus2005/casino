@@ -1,6 +1,7 @@
 import React from "react";
 
-const Table = ({ employees }) => {
+// 🔹 Компонент принимает список сотрудников и функцию удаления
+const Table = ({ employees, onDelete }) => {
   return (
     <table>
       <thead>
@@ -11,17 +12,17 @@ const Table = ({ employees }) => {
         </tr>
       </thead>
       <tbody>
-        {employees.map((employee, index) => {
-          return (
-            <tr key={index}>
-              <td>{employee.name}</td>
-              <td>{employee.job}</td>
-              <td>
-                <button>Delete</button>
-              </td>
-            </tr>
-          );
-        })}
+        {/* 🔄 Проходим по каждому сотруднику и отображаем строку */}
+        {employees.map((employee) => (
+          <tr key={employee.number}>
+            <td>{employee.name}</td>
+            <td>{employee.job}</td>
+            <td>
+              {/* 🗑️ Кнопка удаления вызывает onDelete с ID сотрудника */}
+              <button onClick={() => onDelete(employee.number)}>Delete</button>
+            </td>
+          </tr>
+        ))}
       </tbody>
     </table>
   );
