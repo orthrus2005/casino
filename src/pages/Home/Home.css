@@ -1,0 +1,254 @@
+/* src/pages/Home/Home.css */
+.home-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.hero-section {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  margin-bottom: 3rem;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.hero-section h2 {
+  color: #ffd700;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hero-section p {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
+}
+
+.balance-display {
+  font-size: 1.3rem;
+  margin-bottom: 2rem;
+  color: white;
+}
+
+.balance-amount {
+  color: #2ecc71;
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.cta-button {
+  display: inline-block;
+  background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+  color: white;
+  padding: 1rem 2.5rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 30px;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+}
+
+.cta-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+}
+
+.stats-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1.5rem;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  border-color: #ffd700;
+}
+
+.stat-icon {
+  font-size: 2.5rem;
+}
+
+.stat-info h3 {
+  color: #ffd700;
+  font-size: 2rem;
+  margin: 0;
+}
+
+.stat-info p {
+  color: #ccc;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.games-preview {
+  margin-bottom: 3rem;
+}
+
+.games-preview h3 {
+  color: #ffd700;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.game-card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  border-radius: 15px;
+  text-decoration: none;
+  color: white;
+  transition: all 0.3s;
+  backdrop-filter: blur(10px);
+  border: 2px solid transparent;
+  text-align: center;
+}
+
+.game-card:hover {
+  transform: translateY(-10px);
+  border-color: #ffd700;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.game-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+}
+
+.game-card h4 {
+  color: #ffd700;
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
+}
+
+.game-card p {
+  opacity: 0.8;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.game-features {
+  display: flex;
+  justify-content: space-around;
+  gap: 0.5rem;
+}
+
+.game-features span {
+  background: rgba(255, 215, 0, 0.2);
+  padding: 0.3rem 0.6rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  color: #ffd700;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.recent-games {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.recent-games h3 {
+  color: #ffd700;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.games-history {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  border-left: 4px solid #ffd700;
+}
+
+.game-type {
+  font-weight: 500;
+  color: white;
+}
+
+.game-result.win {
+  color: #2ecc71;
+  font-weight: bold;
+}
+
+.game-result.lose {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.game-time {
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .home-page {
+    padding: 1rem;
+  }
+
+  .hero-section {
+    padding: 2rem 1rem;
+  }
+
+  .hero-section h2 {
+    font-size: 2rem;
+  }
+
+  .stats-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .games-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .game-features {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .history-item {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+}
