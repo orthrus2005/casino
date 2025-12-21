@@ -3,6 +3,7 @@ import './App.css';
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext'; // ДОБАВЬТЕ ЭТУ СТРОЧКУ
 import LoginForm from "./components/LoginForm/LoginForm.js";
 import Header from "./components/Header/Header.js";
 import Home from "./pages/Home/Home.js";
@@ -10,7 +11,6 @@ import GamesPage from "./pages/GamesPage/GamesPage.js";
 import About from "./pages/About/About.js";
 import { useAuth } from './context/AuthContext';
 
-// Компонент для защищенных маршрутов
 const ProtectedApp = () => {
   const { isLoggedIn, user, balance, logout, updateBalance } = useAuth();
 
@@ -21,23 +21,23 @@ const ProtectedApp = () => {
   return (
     <Router>
       <div className="App">
-        <Header 
-          user={user} 
-          balance={balance} 
+        <Header
+          user={user}
+          balance={balance}
           onLogout={logout}
         />
         
         <div className="app-content">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route 
-              path="/games" 
+            <Route
+              path="/games"
               element={
-                <GamesPage 
-                  balance={balance} 
-                  updateBalance={updateBalance} 
+                <GamesPage
+                  balance={balance}
+                  updateBalance={updateBalance}
                 />
-              } 
+              }
             />
             <Route path="/about" element={<About />} />
           </Routes>
@@ -47,12 +47,13 @@ const ProtectedApp = () => {
   );
 };
 
-// Главный компонент App
 function App() {
   return (
-    <AuthProvider>
-      <ProtectedApp />
-    </AuthProvider>
+    <ThemeProvider> {/* ОБЕРНИТЕ ВСЕ В ThemeProvider */}
+      <AuthProvider>
+        <ProtectedApp />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

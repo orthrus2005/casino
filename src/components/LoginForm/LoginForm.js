@@ -1,7 +1,24 @@
 // src/components/LoginForm/LoginForm.js
 import React, { useState } from 'react';
+import { 
+  Box, 
+  TextField, 
+  Button, 
+  Typography, 
+  Paper, 
+  Alert, 
+  Card, 
+  CardContent,
+  Divider,
+  useTheme
+} from '@mui/material';
+import { 
+  Casino as CasinoIcon,
+  Security as SecurityIcon,
+  AccountCircle as UserIcon,
+  VpnKey as KeyIcon
+} from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
-import './LoginForm.css';
 
 const LoginForm = () => {
   const [credentials, setCredentials] = useState({
@@ -10,6 +27,7 @@ const LoginForm = () => {
   });
   const [error, setError] = useState('');
   const { login } = useAuth();
+  const theme = useTheme(); // ИСПОЛЬЗУЙТЕ ХУК ТЕМЫ
 
   const handleChange = (e) => {
     setCredentials({
@@ -21,7 +39,6 @@ const LoginForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Простая проверка логина/пароля
     if (credentials.username === 'admin' && credentials.password === 'admin') {
       login('admin', true);
       setError('');
@@ -34,58 +51,109 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="login-container">
-      <form className="login-form" onSubmit={handleSubmit}>
-        <h2>🎰 Вход в Watsok Casino</h2>
-        
-        <div className="form-group">
-          <label htmlFor="username">Логин:</label>
-          <input
-            type="text"
-            id="username"
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        background: theme.palette.background.default, // ИСПОЛЬЗУЙТЕ ТЕМУ
+        p: 2
+      }}
+    >
+      <Paper
+        elevation={10}
+        sx={{
+          p: 4,
+          borderRadius: 4,
+          maxWidth: 450,
+          width: '100%',
+          bgcolor: 'background.paper'
+        }}
+      >
+        <Box sx={{ textAlign: 'center', mb: 3 }}>
+          <CasinoIcon sx={{ fontSize: 60, color: theme.palette.primary.main, mb: 2 }} />
+          <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: theme.palette.text.primary }}>
+            🎰 Watsok Casino
+          </Typography>
+        </Box>
+
+        <form onSubmit={handleSubmit}>
+          <TextField
+            fullWidth
+            label="Логин"
             name="username"
             value={credentials.username}
             onChange={handleChange}
             required
-            placeholder="Введите ваш логин"
+            margin="normal"
           />
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="password">Пароль:</label>
-          <input
+          
+          <TextField
+            fullWidth
             type="password"
-            id="password"
+            label="Пароль"
             name="password"
             value={credentials.password}
             onChange={handleChange}
             required
-            placeholder="Введите ваш пароль"
+            margin="normal"
+            sx={{ mb: 3 }}
           />
-        </div>
-        
-        {error && <div className="error-message">{error}</div>}
-        
-        <button type="submit" className="login-btn">
-          Войти в казино
-        </button>
-        
-        <div className="login-hint">
-          <p><strong>Тестовые аккаунты:</strong></p>
-          <div className="account-info">
-            <div className="account">
-              <span className="role">Администратор:</span>
-              <span className="credentials">admin / admin</span>
-            </div>
-            <div className="account">
-              <span className="role">Пользователь:</span>
-              <span className="credentials">user / user</span>
-            </div>
-          </div>
-          <p className="bonus-info">🎁 Каждый новый игрок получает <strong>1000$</strong> начального баланса!</p>
-        </div>
-      </form>
-    </div>
+          
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          
+          <Button
+            fullWidth
+            type="submit"
+            variant="contained"
+            size="large"
+            sx={{
+              py: 1.5,
+              borderRadius: 3,
+              background: `linear-gradient(45deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`
+            }}
+          >
+            Войти в казино
+          </Button>
+        </form>
+
+        <Divider sx={{ my: 3 }} />
+
+        <Card variant="outlined">
+          <CardContent>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <SecurityIcon sx={{ mr: 1 }} />
+              <Typography variant="h6">
+                Тестовые аккаунты
+              </Typography>
+            </Box>
+            
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                Администратор:
+              </Typography>
+              <Typography variant="body1" sx={{ fontFamily: 'monospace', bgcolor: 'grey.100', p: 1 }}>
+                admin / admin
+              </Typography>
+            </Box>
+            
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                Пользователь:
+              </Typography>
+              <Typography variant="body1" sx={{ fontFamily: 'monospace', bgcolor: 'grey.100', p: 1 }}>
+                user / user
+              </Typography>
+            </Box>
+          </CardContent>
+        </Card>
+      </Paper>
+    </Box>
   );
 };
 
