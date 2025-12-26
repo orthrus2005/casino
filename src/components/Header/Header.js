@@ -27,8 +27,9 @@ import {
 } from '@mui/icons-material';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { toggleTheme } from '../../store/slices/themeSlice';
+import { logoutUser } from '../../store/slices/authSlice'; // ИЗМЕНЕНО ЗДЕСЬ
 
-const Header = ({ user, balance, onLogout }) => {
+const Header = ({ user, balance }) => { // Убрали onLogout из props
   const [openLogoutConfirm, setOpenLogoutConfirm] = useState(false);
   const muiTheme = useTheme();
   const mode = useAppSelector(state => state.theme.mode);
@@ -41,7 +42,7 @@ const Header = ({ user, balance, onLogout }) => {
 
   const handleConfirmLogout = () => {
     setOpenLogoutConfirm(false);
-    onLogout();
+    dispatch(logoutUser()); // ИЗМЕНЕНО ЗДЕСЬ
   };
 
   const handleCancelLogout = () => {

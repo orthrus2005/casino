@@ -6,8 +6,8 @@ import Home from "../pages/Home/Home.js";
 import GamesPage from "../pages/GamesPage/GamesPage.js";
 import About from "../pages/About/About.js";
 import { useAppSelector, useAppDispatch } from "../store/hooks";
-import { logout, updateBalance } from "../store/slices/authSlice";
-import { ThemeProvider } from './ThemeProvider';
+import { logoutUser, updateBalance } from "../store/slices/authSlice";
+import { ThemeProvider } from './ThemeProvider'; // ИЗМЕНЕНО ЗДЕСЬ
 
 const ProtectedApp = () => {
   const isLoggedIn = useAppSelector(state => state.auth.isLoggedIn);
@@ -15,9 +15,8 @@ const ProtectedApp = () => {
   const balance = useAppSelector(state => state.auth.balance);
   const dispatch = useAppDispatch();
 
-  const handleLogout = () => {
-    dispatch(logout());
-  };
+  // Убрали handleLogout, так как Header теперь сам управляет выходом
+  // ИЛИ оставим для других компонентов если нужно
 
   const handleUpdateBalance = (amount) => {
     dispatch(updateBalance(amount));
@@ -32,10 +31,10 @@ const ProtectedApp = () => {
     <ThemeProvider>
       <Router>
         <div className="App">
+          {/* УБРАЛИ пропс onLogout */}
           <Header
             user={user}
             balance={balance}
-            onLogout={handleLogout}
           />
           
           <div className="app-content">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   TextField,
@@ -9,7 +9,8 @@ import {
   Card,
   CardContent,
   Divider,
-  useTheme
+  useTheme,
+  CircularProgress
 } from '@mui/material';
 import {
   Casino as CasinoIcon,
@@ -17,36 +18,53 @@ import {
   AccountCircle as UserIcon,
   VpnKey as KeyIcon
 } from '@mui/icons-material';
-import { useAppDispatch } from '../../store/hooks';
-import { login } from '../../store/slices/authSlice';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { loginUser, clearError } from '../../store/slices/authSlice';
+import { selectAuthLoading, selectAuthError } from '../../store/slices/authSlice';
 
 const LoginForm = () => {
   const [credentials, setCredentials] = useState({
     username: '',
     password: ''
   });
-  const [error, setError] = useState('');
   const dispatch = useAppDispatch();
+  const loading = useAppSelector(selectAuthLoading);
+  const error = useAppSelector(selectAuthError);
   const theme = useTheme();
+
+  useEffect(() => {
+    // Очищаем ошибки при размонтировании
+    return () => {
+      dispatch(clearError());
+    };
+  }, [dispatch]);
 
   const handleChange = (e) => {
     setCredentials({
       ...credentials,
       [e.target.name]: e.target.value
     });
+    // Очищаем ошибку при изменении ввода
+    if (error) {
+      dispatch(clearError());
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-   
-    if (credentials.username === 'admin' && credentials.password === 'admin') {
-      dispatch(login({ user: 'admin', isAdmin: true }));
-      setError('');
-    } else if (credentials.username === 'user' && credentials.password === 'user') {
-      dispatch(login({ user: 'user', isAdmin: false }));
-      setError('');
-    } else {
-      setError('Неверный логин или пароль');
+    
+    if (!credentials.username.trim() || !credentials.password.trim()) {
+      return;
+    }
+    
+    try {
+      await dispatch(loginUser({
+        username: credentials.username,
+        password: credentials.password
+      })).unwrap();
+    } catch (err) {
+      // Ошибка уже обработана в slice
+      console.error('Login error:', err);
     }
   };
 
@@ -86,6 +104,8 @@ const LoginForm = () => {
             onChange={handleChange}
             required
             margin="normal"
+            disabled={loading}
+            error={!!error}
           />
          
           <TextField
@@ -98,10 +118,16 @@ const LoginForm = () => {
             required
             margin="normal"
             sx={{ mb: 3 }}
+            disabled={loading}
+            error={!!error}
           />
          
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert 
+              severity="error" 
+              sx={{ mb: 2 }}
+              onClose={() => dispatch(clearError())}
+            >
               {error}
             </Alert>
           )}
@@ -111,13 +137,19 @@ const LoginForm = () => {
             type="submit"
             variant="contained"
             size="large"
+            disabled={loading || !credentials.username.trim() || !credentials.password.trim()}
             sx={{
               py: 1.5,
               borderRadius: 3,
-              background: `linear-gradient(45deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`
+              background: `linear-gradient(45deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+              position: 'relative'
             }}
           >
-            Войти в казино
+            {loading ? (
+              <CircularProgress size={24} sx={{ color: 'white' }} />
+            ) : (
+              'Войти в казино'
+            )}
           </Button>
         </form>
         <Divider sx={{ my: 3 }} />

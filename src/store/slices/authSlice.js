@@ -1,4 +1,59 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import authService from '../../api/authService';
+import userService from '../../api/userService';
+
+// Асинхронные thunks
+export const loginUser = createAsyncThunk(
+  'auth/login',
+  async ({ username, password }, { rejectWithValue }) => {
+    try {
+      const response = await authService.login(username, password);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.message || 'Ошибка авторизации');
+    }
+  }
+);
+
+export const logoutUser = createAsyncThunk(
+  'auth/logout',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await authService.logout();
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.message || 'Ошибка выхода');
+    }
+  }
+);
+
+export const depositFunds = createAsyncThunk(
+  'auth/deposit',
+  async (amount, { getState, rejectWithValue }) => {
+    try {
+      const state = getState();
+      const userId = state.auth.user;
+      const response = await userService.deposit(userId, amount);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.message || 'Ошибка пополнения');
+    }
+  }
+);
+
+export const withdrawFunds = createAsyncThunk(
+  'auth/withdraw',
+  async (amount, { getState, rejectWithValue }) => {
+    try {
+      const state = getState();
+      const userId = state.auth.user;
+      const response = await userService.withdraw(userId, amount);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.message || 'Ошибка вывода');
+    }
+  }
+);
 
 const loadFromLocalStorage = () => {
   try {
@@ -13,7 +68,9 @@ const loadFromLocalStorage = () => {
         user: savedUser,
         isAdmin: savedIsAdmin === 'true',
         balance: savedBalance ? parseInt(savedBalance) : 1000,
-        gameHistory: savedHistory ? JSON.parse(savedHistory) : []
+        gameHistory: savedHistory ? JSON.parse(savedHistory) : [],
+        loading: false,
+        error: null
       };
     }
   } catch (error) {
@@ -28,40 +85,16 @@ const initialState = loadFromLocalStorage() || {
   user: null,
   isAdmin: false,
   balance: 1000,
-  gameHistory: []
+  gameHistory: [],
+  loading: false,
+  error: null
 };
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    login: (state, action) => {
-      const { user, isAdmin } = action.payload;
-      state.isLoggedIn = true;
-      state.user = user;
-      state.isAdmin = isAdmin;
-      state.balance = 1000;
-      
-      // Сохраняем в localStorage
-      localStorage.setItem('casino_user', user);
-      localStorage.setItem('casino_isAdmin', isAdmin);
-      localStorage.setItem('casino_balance', '1000');
-    },
-    
-    logout: (state) => {
-      state.isLoggedIn = false;
-      state.user = null;
-      state.isAdmin = false;
-      state.balance = 1000;
-      state.gameHistory = [];
-      
-      // Очищаем localStorage
-      localStorage.removeItem('casino_user');
-      localStorage.removeItem('casino_isAdmin');
-      localStorage.removeItem('casino_balance');
-      localStorage.removeItem('casino_history');
-    },
-    
+    // Синхронные редьюсеры
     updateBalance: (state, action) => {
       const amount = action.payload;
       state.balance += amount;
@@ -82,29 +115,77 @@ const authSlice = createSlice({
       
       state.gameHistory.unshift(gameRecord);
       
-      // Храним только последние 50 игр
       if (state.gameHistory.length > 50) {
         state.gameHistory = state.gameHistory.slice(0, 50);
       }
       
-      // Сохраняем в localStorage
       localStorage.setItem('casino_history', JSON.stringify(state.gameHistory));
     },
     
     clearGameHistory: (state) => {
       state.gameHistory = [];
       localStorage.removeItem('casino_history');
+    },
+    
+    clearError: (state) => {
+      state.error = null;
     }
+  },
+  extraReducers: (builder) => {
+    builder
+      // Логин
+      .addCase(loginUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isLoggedIn = true;
+        state.user = action.payload.user;
+        state.isAdmin = action.payload.isAdmin;
+        state.balance = action.payload.balance;
+        state.error = null;
+        
+        localStorage.setItem('casino_user', action.payload.user);
+        localStorage.setItem('casino_isAdmin', action.payload.isAdmin);
+        localStorage.setItem('casino_balance', action.payload.balance.toString());
+        localStorage.setItem('casino_token', action.payload.token || 'mock-token');
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // Логаут
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.isLoggedIn = false;
+        state.user = null;
+        state.isAdmin = false;
+        state.balance = 1000;
+        state.gameHistory = [];
+        state.error = null;
+      })
+      
+      // Пополнение
+      .addCase(depositFunds.fulfilled, (state, action) => {
+        state.balance = action.payload.newBalance;
+        localStorage.setItem('casino_balance', action.payload.newBalance.toString());
+      })
+      
+      // Вывод
+      .addCase(withdrawFunds.fulfilled, (state, action) => {
+        state.balance = action.payload.newBalance;
+        localStorage.setItem('casino_balance', action.payload.newBalance.toString());
+      });
   }
 });
 
 export const { 
-  login, 
-  logout, 
   updateBalance, 
   setBalance, 
   addGameHistory, 
-  clearGameHistory 
+  clearGameHistory,
+  clearError
 } = authSlice.actions;
 
 // Селекторы
@@ -113,5 +194,7 @@ export const selectUser = (state) => state.auth.user;
 export const selectIsAdmin = (state) => state.auth.isAdmin;
 export const selectBalance = (state) => state.auth.balance;
 export const selectGameHistory = (state) => state.auth.gameHistory;
+export const selectAuthLoading = (state) => state.auth.loading;
+export const selectAuthError = (state) => state.auth.error;
 
 export default authSlice.reducer;
