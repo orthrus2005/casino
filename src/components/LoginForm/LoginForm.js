@@ -1,24 +1,24 @@
-// src/components/LoginForm/LoginForm.js
 import React, { useState } from 'react';
-import { 
-  Box, 
-  TextField, 
-  Button, 
-  Typography, 
-  Paper, 
-  Alert, 
-  Card, 
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Paper,
+  Alert,
+  Card,
   CardContent,
   Divider,
   useTheme
 } from '@mui/material';
-import { 
+import {
   Casino as CasinoIcon,
   Security as SecurityIcon,
   AccountCircle as UserIcon,
   VpnKey as KeyIcon
 } from '@mui/icons-material';
-import { useAuth } from '../../context/AuthContext';
+import { useAppDispatch } from '../../store/hooks';
+import { login } from '../../store/slices/authSlice';
 
 const LoginForm = () => {
   const [credentials, setCredentials] = useState({
@@ -26,8 +26,8 @@ const LoginForm = () => {
     password: ''
   });
   const [error, setError] = useState('');
-  const { login } = useAuth();
-  const theme = useTheme(); // ИСПОЛЬЗУЙТЕ ХУК ТЕМЫ
+  const dispatch = useAppDispatch();
+  const theme = useTheme();
 
   const handleChange = (e) => {
     setCredentials({
@@ -38,12 +38,12 @@ const LoginForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+   
     if (credentials.username === 'admin' && credentials.password === 'admin') {
-      login('admin', true);
+      dispatch(login({ user: 'admin', isAdmin: true }));
       setError('');
     } else if (credentials.username === 'user' && credentials.password === 'user') {
-      login('user', false);
+      dispatch(login({ user: 'user', isAdmin: false }));
       setError('');
     } else {
       setError('Неверный логин или пароль');
@@ -57,7 +57,7 @@ const LoginForm = () => {
         justifyContent: 'center',
         alignItems: 'center',
         minHeight: '100vh',
-        background: theme.palette.background.default, // ИСПОЛЬЗУЙТЕ ТЕМУ
+        background: theme.palette.background.default,
         p: 2
       }}
     >
@@ -77,7 +77,6 @@ const LoginForm = () => {
             🎰 Watsok Casino
           </Typography>
         </Box>
-
         <form onSubmit={handleSubmit}>
           <TextField
             fullWidth
@@ -88,7 +87,7 @@ const LoginForm = () => {
             required
             margin="normal"
           />
-          
+         
           <TextField
             fullWidth
             type="password"
@@ -100,13 +99,13 @@ const LoginForm = () => {
             margin="normal"
             sx={{ mb: 3 }}
           />
-          
+         
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
             </Alert>
           )}
-          
+         
           <Button
             fullWidth
             type="submit"
@@ -121,9 +120,7 @@ const LoginForm = () => {
             Войти в казино
           </Button>
         </form>
-
         <Divider sx={{ my: 3 }} />
-
         <Card variant="outlined">
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -132,7 +129,7 @@ const LoginForm = () => {
                 Тестовые аккаунты
               </Typography>
             </Box>
-            
+           
             <Box sx={{ mb: 2 }}>
               <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                 Администратор:
@@ -141,7 +138,7 @@ const LoginForm = () => {
                 admin / admin
               </Typography>
             </Box>
-            
+           
             <Box>
               <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                 Пользователь:

@@ -1,5 +1,6 @@
-// src/components/games/slots/Slots.js
 import React, { useState, useEffect } from 'react';
+import { useAppDispatch } from '../../../store/hooks';
+import { addGameHistory } from '../../../store/slices/authSlice';
 import {
   Box,
   Typography,
@@ -30,7 +31,9 @@ import {
 import GameHistory from '../../common/GameHistory';
 import CasinoService from '../../../api/casinoService';
 
-const Slots = ({ balance, updateBalance, addGameHistory }) => {
+const Slots = ({ balance, updateBalance }) => {
+  const dispatch = useAppDispatch();
+  
   const [bet, setBet] = useState(10);
   const [betInput, setBetInput] = useState('10');
   const [spinning, setSpinning] = useState(false);
@@ -39,8 +42,8 @@ const Slots = ({ balance, updateBalance, addGameHistory }) => {
   const [history, setHistory] = useState([]);
   const [error, setError] = useState('');
   const [quickBetMode, setQuickBetMode] = useState('manual'); // 'manual' или 'preset'
-  const theme = useTheme();
 
+  const theme = useTheme();
   const gameInfo = CasinoService.getGameInfo('slots');
   const symbols = gameInfo?.symbols || ['🍒', '🍋', '🍊', '🍇', '🔔', '💎', '7️⃣'];
   const MIN_BET = gameInfo?.minBet || 10;
@@ -165,10 +168,10 @@ const Slots = ({ balance, updateBalance, addGameHistory }) => {
       setMessage(validation.error);
       return;
     }
-
+    
     setSpinning(true);
     setMessage('Крутим...');
-
+    
     // Спин анимация
     const spins = 10;
     let spinCount = 0;
@@ -207,7 +210,7 @@ const Slots = ({ balance, updateBalance, addGameHistory }) => {
     } else {
       winMessage = 'Повезет в следующий раз!';
     }
-
+    
     const newBalance = updateBalance(winAmount);
     setMessage(winMessage);
     
@@ -227,10 +230,8 @@ const Slots = ({ balance, updateBalance, addGameHistory }) => {
     // Добавляем в локальную историю
     setHistory(prev => [gameRecord, ...prev.slice(0, 9)]);
     
-    // Добавляем в глобальную историю через контекст
-    if (addGameHistory) {
-      addGameHistory(gameRecord);
-    }
+    // Используем Redux dispatch
+    dispatch(addGameHistory(gameRecord));
   };
 
   const increaseBet = () => {
@@ -309,7 +310,7 @@ const Slots = ({ balance, updateBalance, addGameHistory }) => {
                   ))}
                 </Grid>
               </Paper>
-
+              
               {/* Выбор ставки */}
               <Card sx={{ mb: 3, bgcolor: 'background.paper' }}>
                 <CardContent>
@@ -333,7 +334,7 @@ const Slots = ({ balance, updateBalance, addGameHistory }) => {
                         Быстрые ставки
                       </ToggleButton>
                     </ToggleButtonGroup>
-
+                    
                     {quickBetMode === 'manual' ? (
                       <>
                         {/* Поле ввода ставки */}
@@ -370,8 +371,8 @@ const Slots = ({ balance, updateBalance, addGameHistory }) => {
                           />
                           
                           {error && (
-                            <Alert 
-                              severity="error" 
+                            <Alert
+                              severity="error"
                               icon={<WarningIcon />}
                               sx={{ mt: 1 }}
                             >
@@ -379,7 +380,7 @@ const Slots = ({ balance, updateBalance, addGameHistory }) => {
                             </Alert>
                           )}
                         </Box>
-
+                        
                         {/* Слайдер для выбора ставки */}
                         <Box sx={{ px: 2, mb: 2 }}>
                           <Slider
@@ -399,11 +400,11 @@ const Slots = ({ balance, updateBalance, addGameHistory }) => {
                             }}
                           />
                         </Box>
-
+                        
                         {/* Кнопки +/- */}
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
-                          <IconButton 
-                            onClick={decreaseBet} 
+                          <IconButton
+                            onClick={decreaseBet}
                             disabled={spinning || bet <= MIN_BET}
                             color="error"
                             size="large"
@@ -414,16 +415,16 @@ const Slots = ({ balance, updateBalance, addGameHistory }) => {
                           <Chip
                             label={`Ставка: $${bet}`}
                             color="primary"
-                            sx={{ 
-                              fontSize: '1.2rem', 
+                            sx={{
+                              fontSize: '1.2rem',
                               fontWeight: 'bold',
                               px: 3,
                               py: 2
                             }}
                           />
                           
-                          <IconButton 
-                            onClick={increaseBet} 
+                          <IconButton
+                            onClick={increaseBet}
                             disabled={spinning || bet >= Math.min(MAX_BET, balance)}
                             color="success"
                             size="large"
@@ -467,7 +468,7 @@ const Slots = ({ balance, updateBalance, addGameHistory }) => {
                   </Typography>
                 </CardContent>
               </Card>
-
+              
               {/* Кнопка вращения и информация */}
               <Box sx={{ textAlign: 'center', mb: 3 }}>
                 <Button
@@ -510,7 +511,7 @@ const Slots = ({ balance, updateBalance, addGameHistory }) => {
                   />
                 </Box>
               </Box>
-
+              
               {/* Сообщение о результате */}
               <Paper
                 elevation={2}
@@ -518,14 +519,14 @@ const Slots = ({ balance, updateBalance, addGameHistory }) => {
                   p: 2,
                   mb: 3,
                   textAlign: 'center',
-                  bgcolor: message.includes('ДЖЕКПОТ') 
+                  bgcolor: message.includes('ДЖЕКПОТ')
                     ? theme.palette.mode === 'dark' ? 'rgba(255, 215, 0, 0.2)' : 'rgba(255, 215, 0, 0.1)'
                     : message.includes('Пара')
                     ? theme.palette.mode === 'dark' ? 'rgba(46, 204, 113, 0.2)' : 'rgba(46, 204, 113, 0.1)'
                     : theme.palette.mode === 'dark' ? 'rgba(231, 76, 60, 0.2)' : 'rgba(231, 76, 60, 0.1)',
                   border: `1px solid ${
-                    message.includes('ДЖЕКПОТ') 
-                      ? theme.palette.warning.main 
+                    message.includes('ДЖЕКПОТ')
+                      ? theme.palette.warning.main
                       : message.includes('Пара')
                       ? theme.palette.success.main
                       : theme.palette.error.main
@@ -533,12 +534,12 @@ const Slots = ({ balance, updateBalance, addGameHistory }) => {
                   borderRadius: 2
                 }}
               >
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
+                <Typography
+                  variant="h6"
+                  sx={{
                     fontWeight: 'bold',
-                    color: message.includes('ДЖЕКПОТ') 
-                      ? theme.palette.warning.main 
+                    color: message.includes('ДЖЕКПОТ')
+                      ? theme.palette.warning.main
                       : message.includes('Пара')
                       ? theme.palette.success.main
                       : theme.palette.error.main
@@ -550,12 +551,12 @@ const Slots = ({ balance, updateBalance, addGameHistory }) => {
             </CardContent>
           </Card>
         </Grid>
-
+        
         {/* Правая колонка - история */}
         <Grid item xs={12} md={4}>
           <Card sx={{ bgcolor: 'background.paper', height: '100%' }}>
             <CardContent>
-              <GameHistory 
+              <GameHistory
                 history={history}
                 onClearHistory={clearHistory}
                 title="История слотов"

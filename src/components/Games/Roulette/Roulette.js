@@ -1,5 +1,6 @@
-// src/components/games/roulette/Roulette.js
 import React, { useState, useEffect } from 'react';
+import { useAppDispatch } from '../../../store/hooks';
+import { addGameHistory } from '../../../store/slices/authSlice';
 import {
   Box,
   Typography,
@@ -28,7 +29,9 @@ import {
 import GameHistory from '../../common/GameHistory';
 import CasinoService from '../../../api/casinoService';
 
-const Roulette = ({ balance, updateBalance, addGameHistory }) => {
+const Roulette = ({ balance, updateBalance }) => {
+  const dispatch = useAppDispatch();
+  
   const [bet, setBet] = useState(10);
   const [betInput, setBetInput] = useState('10');
   const [selectedBet, setSelectedBet] = useState(null);
@@ -38,14 +41,15 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
   const [history, setHistory] = useState([]);
   const [error, setError] = useState('');
   const [quickBetMode, setQuickBetMode] = useState('manual');
-  const theme = useTheme();
 
+  const theme = useTheme();
   const gameInfo = CasinoService.getGameInfo('roulette');
   const bets = gameInfo?.bets || [
     { type: 'red', label: 'Красное', multiplier: 2, color: '#e74c3c' },
     { type: 'black', label: 'Черное', multiplier: 2, color: '#2c3e50' },
     { type: 'green', label: 'Зеленое', multiplier: 14, color: '#2ecc71' }
   ];
+
   const MIN_BET = gameInfo?.minBet || 10;
   const MAX_BET = gameInfo?.maxBet || 500;
   const presetBets = [10, 25, 50, 100, 250, 500];
@@ -149,7 +153,7 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
       setMessage('Выберите цвет для ставки!');
       return;
     }
-
+    
     const validation = CasinoService.validateBet('roulette', bet, balance);
     if (!validation.valid) {
       setMessage(validation.error);
@@ -158,7 +162,7 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
 
     setSpinning(true);
     setMessage('Крутим рулетку...');
-
+    
     setTimeout(() => {
       const winColor = CasinoService.spinRoulette();
       setResult(winColor);
@@ -170,7 +174,7 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
       } else {
         setMessage(`Выпало ${winColor === 'red' ? '🔴' : winColor === 'black' ? '⚫' : '🟢'}. Попробуйте еще!`);
       }
-
+      
       const newBalance = updateBalance(winAmount);
       
       // Создаем запись об игре
@@ -191,10 +195,8 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
       // Добавляем в локальную историю
       setHistory(prev => [gameRecord, ...prev.slice(0, 9)]);
       
-      // Добавляем в глобальную историю через контекст
-      if (addGameHistory) {
-        addGameHistory(gameRecord);
-      }
+      // Используем Redux dispatch
+      dispatch(addGameHistory(gameRecord));
       
       setSpinning(false);
     }, 2000);
@@ -228,9 +230,9 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
                   position: 'relative'
                 }}
               >
-                <Box sx={{ 
-                  width: 200, 
-                  height: 200, 
+                <Box sx={{
+                  width: 200,
+                  height: 200,
                   mx: 'auto',
                   display: 'flex',
                   alignItems: 'center',
@@ -244,7 +246,7 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
                     '100%': { transform: 'rotate(1080deg)' },
                   }
                 }}>
-                  <Box sx={{ 
+                  <Box sx={{
                     fontSize: '3rem',
                     color: result === 'red' ? '#e74c3c' : result === 'black' ? '#2c3e50' : '#2ecc71'
                   }}>
@@ -255,7 +257,7 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
                   </Box>
                 </Box>
                 
-                <Box sx={{ 
+                <Box sx={{
                   position: 'absolute',
                   top: '50%',
                   left: '50%',
@@ -268,7 +270,7 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
                   zIndex: 2
                 }} />
               </Paper>
-
+              
               {/* Выбор ставки на цвет */}
               <Card sx={{ mb: 3, bgcolor: 'background.paper' }}>
                 <CardContent>
@@ -282,7 +284,7 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
                         <Button
                           fullWidth
                           variant={selectedBet?.type === betOption.type ? "contained" : "outlined"}
-                          style={{ 
+                          style={{
                             backgroundColor: selectedBet?.type === betOption.type ? betOption.color : 'transparent',
                             borderColor: betOption.color,
                             color: selectedBet?.type === betOption.type ? 'white' : betOption.color,
@@ -311,7 +313,7 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
                   </Grid>
                 </CardContent>
               </Card>
-
+              
               {/* Выбор суммы ставки */}
               <Card sx={{ mb: 3, bgcolor: 'background.paper' }}>
                 <CardContent>
@@ -335,7 +337,7 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
                         Быстрые ставки
                       </ToggleButton>
                     </ToggleButtonGroup>
-
+                    
                     {quickBetMode === 'manual' ? (
                       <>
                         {/* Поле ввода ставки */}
@@ -372,8 +374,8 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
                           />
                           
                           {error && (
-                            <Alert 
-                              severity="error" 
+                            <Alert
+                              severity="error"
                               icon={<WarningIcon />}
                               sx={{ mt: 1 }}
                             >
@@ -381,7 +383,7 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
                             </Alert>
                           )}
                         </Box>
-
+                        
                         {/* Слайдер для выбора ставки */}
                         <Box sx={{ px: 2, mb: 3 }}>
                           <Slider
@@ -401,14 +403,14 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
                             }}
                           />
                         </Box>
-
+                        
                         {/* Отображение текущей ставки */}
                         <Box sx={{ textAlign: 'center' }}>
                           <Chip
                             label={`Текущая ставка: $${bet}`}
                             color="primary"
-                            sx={{ 
-                              fontSize: '1.2rem', 
+                            sx={{
+                              fontSize: '1.2rem',
                               fontWeight: 'bold',
                               px: 3,
                               py: 2
@@ -451,7 +453,7 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
                   </Typography>
                 </CardContent>
               </Card>
-
+              
               {/* Кнопка вращения и информация */}
               <Box sx={{ textAlign: 'center', mb: 3 }}>
                 <Button
@@ -496,7 +498,7 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
                     <Chip
                       icon={<BetIcon />}
                       label={selectedBet.label}
-                      sx={{ 
+                      sx={{
                         fontWeight: 'bold',
                         bgcolor: selectedBet.color,
                         color: 'white'
@@ -505,7 +507,7 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
                   )}
                 </Box>
               </Box>
-
+              
               {/* Сообщение о результате */}
               <Paper
                 elevation={2}
@@ -513,22 +515,22 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
                   p: 2,
                   mb: 3,
                   textAlign: 'center',
-                  bgcolor: message.includes('Поздравляем') 
+                  bgcolor: message.includes('Поздравляем')
                     ? theme.palette.mode === 'dark' ? 'rgba(46, 204, 113, 0.2)' : 'rgba(46, 204, 113, 0.1)'
                     : theme.palette.mode === 'dark' ? 'rgba(231, 76, 60, 0.2)' : 'rgba(231, 76, 60, 0.1)',
                   border: `1px solid ${
-                    message.includes('Поздравляем') 
+                    message.includes('Поздравляем')
                       ? theme.palette.success.main
                       : theme.palette.error.main
                   }`,
                   borderRadius: 2
                 }}
               >
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
+                <Typography
+                  variant="h6"
+                  sx={{
                     fontWeight: 'bold',
-                    color: message.includes('Поздравляем') 
+                    color: message.includes('Поздравляем')
                       ? theme.palette.success.main
                       : theme.palette.error.main
                   }}
@@ -544,12 +546,12 @@ const Roulette = ({ balance, updateBalance, addGameHistory }) => {
             </CardContent>
           </Card>
         </Grid>
-
+        
         {/* Правая колонка - история */}
         <Grid item xs={12} md={4}>
           <Card sx={{ bgcolor: 'background.paper', height: '100%' }}>
             <CardContent>
-              <GameHistory 
+              <GameHistory
                 history={history}
                 onClearHistory={clearHistory}
                 title="История рулетки"

@@ -1,18 +1,45 @@
-// src/components/games/blackjack/Blackjack.js
-import React, { useState, useEffect } from 'react';
-import './Blackjack.css';
+import React, { useState } from 'react';
+import { useAppDispatch } from '../../../store/hooks';
+import { addGameHistory } from '../../../store/slices/authSlice';
+import {
+  Box,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Grid,
+  Paper,
+  Chip,
+  IconButton,
+  useTheme,
+  CardActions
+} from '@mui/material';
+import {
+  Add as AddIcon,
+  Remove as RemoveIcon,
+  Casino as CasinoIcon,
+  CreditCard as CardIcon,
+  TrendingUp as WinIcon,
+  TrendingDown as LoseIcon
+} from '@mui/icons-material';
+import GameHistory from '../../common/GameHistory';
+import CasinoService from '../../../api/casinoService';
 
 const Blackjack = ({ balance, updateBalance }) => {
+  const dispatch = useAppDispatch();
+  
   const [bet, setBet] = useState(10);
   const [playerHand, setPlayerHand] = useState([]);
   const [dealerHand, setDealerHand] = useState([]);
   const [playerScore, setPlayerScore] = useState(0);
   const [dealerScore, setDealerScore] = useState(0);
-  const [gameState, setGameState] = useState('betting'); // betting, player-turn, dealer-turn, game-over
+  const [gameState, setGameState] = useState('betting');
   const [message, setMessage] = useState('Сделайте ставку!');
   const [history, setHistory] = useState([]);
 
-  const deck = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+  const theme = useTheme();
+  const gameInfo = CasinoService.getGameInfo('blackjack');
+  const deck = gameInfo?.deck || ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
   const getCardValue = (card) => {
     if (card === 'A') return 11;
@@ -41,7 +68,13 @@ const Blackjack = ({ balance, updateBalance }) => {
       setMessage('Недостаточно средств!');
       return;
     }
-
+    
+    const validation = CasinoService.validateBet('blackjack', bet, balance);
+    if (!validation.valid) {
+      setMessage(validation.error);
+      return;
+    }
+    
     const newPlayerHand = [dealCard(), dealCard()];
     const newDealerHand = [dealCard(), dealCard()];
     
@@ -55,8 +88,7 @@ const Blackjack = ({ balance, updateBalance }) => {
     setDealerScore(dealerScore);
     setGameState('player-turn');
     setMessage('Ваш ход! Хит или Стэнд?');
-
-    // Блэкджек при раздаче
+    
     if (playerScore === 21) {
       endGame('blackjack');
     }
@@ -64,14 +96,11 @@ const Blackjack = ({ balance, updateBalance }) => {
 
   const hit = () => {
     if (gameState !== 'player-turn') return;
-
     const newCard = dealCard();
     const newPlayerHand = [...playerHand, newCard];
     const newPlayerScore = calculateScore(newPlayerHand);
-
     setPlayerHand(newPlayerHand);
     setPlayerScore(newPlayerScore);
-
     if (newPlayerScore > 21) {
       endGame('bust');
     } else if (newPlayerScore === 21) {
@@ -82,21 +111,17 @@ const Blackjack = ({ balance, updateBalance }) => {
   const stand = () => {
     setGameState('dealer-turn');
     setMessage('Ход дилера...');
-
-    // Дилер берет карты до 17
+    
     setTimeout(() => {
       let newDealerHand = [...dealerHand];
       let newDealerScore = calculateScore(newDealerHand);
-
       while (newDealerScore < 17) {
         const newCard = dealCard();
         newDealerHand.push(newCard);
         newDealerScore = calculateScore(newDealerHand);
       }
-
       setDealerHand(newDealerHand);
       setDealerScore(newDealerScore);
-
       setTimeout(() => {
         determineWinner(newDealerScore);
       }, 1000);
@@ -106,7 +131,7 @@ const Blackjack = ({ balance, updateBalance }) => {
   const determineWinner = (finalDealerScore) => {
     let result;
     let winAmount = 0;
-
+    
     if (playerScore > 21) {
       result = 'bust';
       winAmount = -bet;
@@ -121,9 +146,9 @@ const Blackjack = ({ balance, updateBalance }) => {
       winAmount = -bet;
     } else {
       result = 'push';
-      winAmount = 0; // Возврат ставки
+      winAmount = 0;
     }
-
+    
     endGame(result, winAmount);
   };
 
@@ -154,21 +179,27 @@ const Blackjack = ({ balance, updateBalance }) => {
       default:
         resultMessage = 'Игра завершена';
     }
-
+    
     const newBalance = updateBalance(winAmount);
     setMessage(resultMessage);
-
-    setHistory(prev => [{
-      playerHand: [...playerHand],
-      dealerHand: [...dealerHand],
-      playerScore: playerScore,
-      dealerScore: dealerScore,
+    
+    const gameRecord = {
+      type: 'Блэкджек',
       bet: bet,
       win: winAmount,
-      balance: newBalance,
       result: result,
-      timestamp: new Date().toLocaleTimeString()
-    }, ...prev.slice(0, 9)]);
+      timestamp: new Date().toLocaleTimeString(),
+      details: {
+        playerScore: playerScore,
+        dealerScore: dealerScore,
+        balance: newBalance
+      }
+    };
+    
+    setHistory(prev => [gameRecord, ...prev.slice(0, 9)]);
+    
+    // Используем Redux dispatch вместо пропса
+    dispatch(addGameHistory(gameRecord));
   };
 
   const resetGame = () => {
@@ -192,112 +223,213 @@ const Blackjack = ({ balance, updateBalance }) => {
     }
   };
 
-  const getCardSymbol = (card) => {
-    const symbols = {
-      '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7',
-      '8': '8', '9': '9', '10': '10', 'J': 'J', 'Q': 'Q', 'K': 'K', 'A': 'A'
-    };
-    return symbols[card];
+  const clearHistory = () => {
+    setHistory([]);
   };
 
   return (
-    <div className="blackjack-game">
-      <h2>♠️ Блэкджек</h2>
-      
-      <div className="blackjack-container">
-        {/* Дилер */}
-        <div className="dealer-area">
-          <h3>Дилер: {dealerScore}</h3>
-          <div className="hand">
-            {dealerHand.map((card, index) => (
-              <div 
-                key={index} 
-                className={`card ${index === 1 && gameState === 'player-turn' ? 'hidden' : ''}`}
+    <Box sx={{ maxWidth: 1200, mx: 'auto', p: { xs: 1, md: 2 } }}>
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={8}>
+          <Card sx={{ mb: 3, bgcolor: 'background.paper' }}>
+            <CardContent>
+              <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', color: theme.palette.warning.main }}>
+                ♠️ {gameInfo?.name || 'Блэкджек'}
+              </Typography>
+              
+              {/* Дилер и игрок */}
+              <Grid container spacing={3} sx={{ mb: 3 }}>
+                <Grid item xs={12}>
+                  <Paper sx={{ p: 2, bgcolor: 'rgba(0,0,0,0.1)', borderRadius: 2 }}>
+                    <Typography variant="h6" gutterBottom sx={{ color: theme.palette.warning.main }}>
+                      Дилер: {dealerScore}
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+                      {dealerHand.map((card, index) => (
+                        <Paper
+                          key={index}
+                          sx={{
+                            width: 60,
+                            height: 90,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '1.8rem',
+                            bgcolor: index === 1 && gameState === 'player-turn' ? theme.palette.error.main : 'white',
+                            color: index === 1 && gameState === 'player-turn' ? 'transparent' : theme.palette.text.primary,
+                            borderRadius: 1,
+                            border: `2px solid ${theme.palette.warning.main}`,
+                            position: 'relative'
+                          }}
+                        >
+                          {index === 1 && gameState === 'player-turn' ? '?' : card}
+                        </Paper>
+                      ))}
+                    </Box>
+                  </Paper>
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <Paper sx={{ p: 2, bgcolor: 'rgba(0,0,0,0.1)', borderRadius: 2 }}>
+                    <Typography variant="h6" gutterBottom sx={{ color: theme.palette.primary.main }}>
+                      Вы: {playerScore}
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+                      {playerHand.map((card, index) => (
+                        <Paper
+                          key={index}
+                          sx={{
+                            width: 60,
+                            height: 90,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '1.8rem',
+                            bgcolor: 'white',
+                            borderRadius: 1,
+                            border: `2px solid ${theme.palette.primary.main}`
+                          }}
+                        >
+                          {card}
+                        </Paper>
+                      ))}
+                    </Box>
+                  </Paper>
+                </Grid>
+              </Grid>
+              
+              {/* Управление ставкой */}
+              {gameState === 'betting' && (
+                <Card sx={{ mb: 3, bgcolor: 'background.paper' }}>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom sx={{ textAlign: 'center' }}>
+                      Ставка
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, mb: 2 }}>
+                      <IconButton onClick={decreaseBet} disabled={bet <= 10} color="error" size="large">
+                        <RemoveIcon />
+                      </IconButton>
+                      <Chip
+                        label={`$${bet}`}
+                        color="primary"
+                        sx={{ fontSize: '1.5rem', fontWeight: 'bold', px: 3, py: 2 }}
+                      />
+                      <IconButton
+                        onClick={increaseBet}
+                        disabled={bet >= Math.min(500, balance)}
+                        color="success"
+                        size="large"
+                      >
+                        <AddIcon />
+                      </IconButton>
+                    </Box>
+                    <Typography variant="body2" color="textSecondary" textAlign="center">
+                      Диапазон: $10 - ${Math.min(500, balance)}
+                    </Typography>
+                  </CardContent>
+                  <CardActions sx={{ justifyContent: 'center' }}>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      startIcon={<CasinoIcon />}
+                      onClick={startGame}
+                      sx={{ px: 4, py: 1.5 }}
+                    >
+                      Раздать карты
+                    </Button>
+                  </CardActions>
+                </Card>
+              )}
+              
+              {/* Игровые кнопки */}
+              {gameState === 'player-turn' && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mb: 3 }}>
+                  <Button
+                    variant="contained"
+                    color="info"
+                    onClick={hit}
+                    startIcon={<AddIcon />}
+                    sx={{ px: 4, py: 1.5 }}
+                  >
+                    Хит
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="warning"
+                    onClick={stand}
+                    sx={{ px: 4, py: 1.5 }}
+                  >
+                    Стэнд
+                  </Button>
+                </Box>
+              )}
+              
+              {gameState === 'game-over' && (
+                <Box sx={{ textAlign: 'center', mb: 3 }}>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={resetGame}
+                    startIcon={<CasinoIcon />}
+                    sx={{ px: 4, py: 1.5 }}
+                  >
+                    Новая игра
+                  </Button>
+                </Box>
+              )}
+              
+              {/* Сообщение */}
+              <Paper
+                sx={{
+                  p: 3,
+                  textAlign: 'center',
+                  bgcolor: message.includes('БЛЭКДЖЕК')
+                    ? 'rgba(255, 215, 0, 0.1)'
+                    : message.includes('выиграли')
+                    ? 'rgba(46, 204, 113, 0.1)'
+                    : 'rgba(231, 76, 60, 0.1)',
+                  border: `2px solid ${
+                    message.includes('БЛЭКДЖЕК')
+                      ? theme.palette.warning.main
+                      : message.includes('выиграли')
+                      ? theme.palette.success.main
+                      : theme.palette.error.main
+                  }`,
+                  borderRadius: 2
+                }}
               >
-                {index === 1 && gameState === 'player-turn' ? '?' : getCardSymbol(card)}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Игрок */}
-        <div className="player-area">
-          <h3>Вы: {playerScore}</h3>
-          <div className="hand">
-            {playerHand.map((card, index) => (
-              <div key={index} className="card">
-                {getCardSymbol(card)}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Управление */}
-        <div className="blackjack-controls">
-          {gameState === 'betting' && (
-            <>
-              <div className="bet-controls">
-                <button onClick={decreaseBet}>-</button>
-                <span>Ставка: ${bet}</span>
-                <button onClick={increaseBet}>+</button>
-              </div>
-              <button onClick={startGame} className="deal-btn">
-                Раздать карты
-              </button>
-            </>
-          )}
-
-          {gameState === 'player-turn' && (
-            <div className="game-buttons">
-              <button onClick={hit} className="hit-btn">
-                Хит
-              </button>
-              <button onClick={stand} className="stand-btn">
-                Стэнд
-              </button>
-            </div>
-          )}
-
-          {gameState === 'game-over' && (
-            <button onClick={resetGame} className="new-game-btn">
-              Новая игра
-            </button>
-          )}
-        </div>
-
-        <div className="message">{message}</div>
-
-        {/* Правила */}
-        <div className="rules">
-          <h4>Правила:</h4>
-          <ul>
-            <li>Цель: набрать 21 очко или больше дилера</li>
-            <li>Блэкджек (21 с двумя картами) = x2.5</li>
-            <li>Дилер берет карты до 17</li>
-            <li>Перебор = проигрыш</li>
-          </ul>
-        </div>
-      </div>
-
-      {history.length > 0 && (
-        <div className="game-history">
-          <h3>История игр:</h3>
-          <div className="history-list">
-            {history.map((game, index) => (
-              <div key={index} className="history-item">
-                <span>Игрок: {game.playerScore}</span>
-                <span>Дилер: {game.dealerScore}</span>
-                <span>Ставка: ${game.bet}</span>
-                <span className={game.win > 0 ? 'win' : game.win < 0 ? 'lose' : 'push'}>
-                  {game.win > 0 ? `+$${game.win}` : game.win < 0 ? `-$${Math.abs(game.win)}` : 'Ничья'}
-                </span>
-                <span>{game.timestamp}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 'bold',
+                    color: message.includes('БЛЭКДЖЕК')
+                      ? theme.palette.warning.main
+                      : message.includes('выиграли')
+                      ? theme.palette.success.main
+                      : theme.palette.error.main
+                  }}
+                >
+                  {message}
+                </Typography>
+              </Paper>
+            </CardContent>
+          </Card>
+        </Grid>
+        
+        {/* История */}
+        <Grid item xs={12} md={4}>
+          <Card sx={{ bgcolor: 'background.paper', height: '100%' }}>
+            <CardContent>
+              <GameHistory
+                history={history}
+                onClearHistory={clearHistory}
+                title="История блэкджека"
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Box>
   );
 };
 

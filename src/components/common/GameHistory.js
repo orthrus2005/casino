@@ -1,4 +1,3 @@
-// src/components/common/GameHistory.js
 import React from 'react';
 import {
   Box,
@@ -17,7 +16,6 @@ import {
 } from '@mui/material';
 import {
   History as HistoryIcon,
-  Casino as CasinoIcon,
   AttachMoney as MoneyIcon,
   TrendingUp as WinIcon,
   TrendingDown as LoseIcon,
@@ -73,10 +71,10 @@ const GameHistory = ({ history, onClearHistory, title = "История игр" 
         <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <HistoryIcon /> {title} ({history.length})
         </Typography>
-        
+       
         {onClearHistory && (
           <Tooltip title="Очистить историю">
-            <IconButton 
+            <IconButton
               onClick={onClearHistory}
               size="small"
               sx={{ color: theme.palette.error.main }}
@@ -86,7 +84,6 @@ const GameHistory = ({ history, onClearHistory, title = "История игр" 
           </Tooltip>
         )}
       </Box>
-
       <TableContainer component={Paper} sx={{ bgcolor: 'background.paper', maxHeight: 400 }}>
         <Table stickyHeader size="small">
           <TableHead>
@@ -100,11 +97,11 @@ const GameHistory = ({ history, onClearHistory, title = "История игр" 
           </TableHead>
           <TableBody>
             {history.map((game, index) => (
-              <TableRow 
+              <TableRow
                 key={index}
-                sx={{ 
-                  '&:hover': { 
-                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)' 
+                sx={{
+                  '&:hover': {
+                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'
                   },
                   borderLeft: `4px solid ${
                     game.win > 0 ? theme.palette.success.main : theme.palette.error.main
@@ -121,28 +118,28 @@ const GameHistory = ({ history, onClearHistory, title = "История игр" 
                     </Typography>
                   </Box>
                 </TableCell>
-                
+               
                 <TableCell>
                   <Chip
                     icon={<MoneyIcon />}
                     label={`$${game.bet || 0}`}
                     size="small"
                     variant="outlined"
-                    sx={{ 
+                    sx={{
                       borderColor: theme.palette.primary.main,
                       color: theme.palette.primary.main
                     }}
                   />
                 </TableCell>
-                
+               
                 <TableCell>
                   {game.result ? (
                     <Chip
                       label={game.result}
                       size="small"
-                      sx={{ 
-                        bgcolor: theme.palette.mode === 'dark' 
-                          ? 'rgba(255,255,255,0.1)' 
+                      sx={{
+                        bgcolor: theme.palette.mode === 'dark'
+                          ? 'rgba(255,255,255,0.1)'
                           : 'rgba(0,0,0,0.05)'
                       }}
                     />
@@ -152,7 +149,7 @@ const GameHistory = ({ history, onClearHistory, title = "История игр" 
                     </Typography>
                   )}
                 </TableCell>
-                
+               
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     {game.win > 0 ? (
@@ -171,7 +168,7 @@ const GameHistory = ({ history, onClearHistory, title = "История игр" 
                     </Typography>
                   </Box>
                 </TableCell>
-                
+               
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <TimeIcon sx={{ fontSize: 16, color: theme.palette.text.secondary }} />
@@ -185,7 +182,6 @@ const GameHistory = ({ history, onClearHistory, title = "История игр" 
           </TableBody>
         </Table>
       </TableContainer>
-
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
         <Typography variant="caption" color="textSecondary">
           Показано: {history.length} игр

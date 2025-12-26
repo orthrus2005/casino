@@ -1,12 +1,11 @@
-// src/components/Header/Header.js
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  AppBar, 
-  Toolbar, 
-  Typography, 
-  Button, 
-  Box, 
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Box,
   IconButton,
   Chip,
   Dialog,
@@ -17,7 +16,7 @@ import {
   useMediaQuery,
   Avatar
 } from '@mui/material';
-import { 
+import {
   Casino as CasinoIcon,
   Brightness4 as DarkModeIcon,
   Brightness7 as LightModeIcon,
@@ -26,12 +25,14 @@ import {
   Person as PersonIcon,
   AttachMoney as MoneyIcon
 } from '@mui/icons-material';
-import { useTheme as useCustomTheme } from '../../context/ThemeContext';
+import { useAppSelector, useAppDispatch } from '../../store/hooks';
+import { toggleTheme } from '../../store/slices/themeSlice';
 
 const Header = ({ user, balance, onLogout }) => {
   const [openLogoutConfirm, setOpenLogoutConfirm] = useState(false);
   const muiTheme = useTheme();
-  const { mode, toggleTheme } = useCustomTheme();
+  const mode = useAppSelector(state => state.theme.mode);
+  const dispatch = useAppDispatch();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
 
   const handleLogoutClick = () => {
@@ -47,13 +48,17 @@ const Header = ({ user, balance, onLogout }) => {
     setOpenLogoutConfirm(false);
   };
 
+  const handleToggleTheme = () => {
+    dispatch(toggleTheme());
+  };
+
   return (
     <>
-      <AppBar 
-        position="static" 
-        sx={{ 
-          background: muiTheme.palette.mode === 'dark' 
-            ? 'rgba(15, 15, 35, 0.95)' 
+      <AppBar
+        position="static"
+        sx={{
+          background: muiTheme.palette.mode === 'dark'
+            ? 'rgba(15, 15, 35, 0.95)'
             : 'rgba(0, 0, 0, 0.9)',
           backdropFilter: 'blur(10px)',
           borderBottom: `2px solid ${muiTheme.palette.warning.main}33`,
@@ -67,10 +72,10 @@ const Header = ({ user, balance, onLogout }) => {
             {/* Логотип */}
             <Box component={Link} to="/" sx={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <CasinoIcon sx={{ fontSize: 34, color: muiTheme.palette.warning.main }} />
-              <Typography 
-                variant="h5" 
-                sx={{ 
-                  fontWeight: 'bold', 
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 'bold',
                   color: muiTheme.palette.warning.main,
                   textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)'
                 }}
@@ -90,8 +95,8 @@ const Header = ({ user, balance, onLogout }) => {
                 fontSize: '1.1rem',
                 borderWidth: 2,
                 borderColor: muiTheme.palette.success.main,
-                bgcolor: muiTheme.palette.mode === 'dark' 
-                  ? 'rgba(46, 204, 113, 0.1)' 
+                bgcolor: muiTheme.palette.mode === 'dark'
+                  ? 'rgba(46, 204, 113, 0.1)'
                   : 'rgba(46, 204, 113, 0.05)',
                 '& .MuiChip-icon': {
                   color: muiTheme.palette.success.main
@@ -134,11 +139,11 @@ const Header = ({ user, balance, onLogout }) => {
             {/* Навигация (скрыта на мобилках) */}
             {!isMobile && (
               <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
-                <Button 
-                  component={Link} 
-                  to="/" 
-                  sx={{ 
-                    color: 'white', 
+                <Button
+                  component={Link}
+                  to="/"
+                  sx={{
+                    color: 'white',
                     fontWeight: 500,
                     '&:hover': {
                       color: muiTheme.palette.warning.main
@@ -147,11 +152,11 @@ const Header = ({ user, balance, onLogout }) => {
                 >
                   Главная
                 </Button>
-                <Button 
-                  component={Link} 
-                  to="/games" 
-                  sx={{ 
-                    color: 'white', 
+                <Button
+                  component={Link}
+                  to="/games"
+                  sx={{
+                    color: 'white',
                     fontWeight: 500,
                     '&:hover': {
                       color: muiTheme.palette.warning.main
@@ -160,11 +165,11 @@ const Header = ({ user, balance, onLogout }) => {
                 >
                   Игры
                 </Button>
-                <Button 
-                  component={Link} 
-                  to="/about" 
-                  sx={{ 
-                    color: 'white', 
+                <Button
+                  component={Link}
+                  to="/about"
+                  sx={{
+                    color: 'white',
                     fontWeight: 500,
                     '&:hover': {
                       color: muiTheme.palette.warning.main
@@ -177,17 +182,17 @@ const Header = ({ user, balance, onLogout }) => {
             )}
 
             {/* Переключатель темы */}
-            <IconButton 
-              onClick={toggleTheme} 
-              sx={{ 
+            <IconButton
+              onClick={handleToggleTheme}
+              sx={{
                 color: muiTheme.palette.warning.main,
-                bgcolor: muiTheme.palette.mode === 'dark' 
-                  ? 'rgba(255, 215, 0, 0.1)' 
+                bgcolor: muiTheme.palette.mode === 'dark'
+                  ? 'rgba(255, 215, 0, 0.1)'
                   : 'rgba(255, 215, 0, 0.05)',
-                '&:hover': { 
-                  bgcolor: muiTheme.palette.mode === 'dark' 
-                    ? 'rgba(255, 215, 0, 0.2)' 
-                    : 'rgba(255, 215, 0, 0.1)' 
+                '&:hover': {
+                  bgcolor: muiTheme.palette.mode === 'dark'
+                    ? 'rgba(255, 215, 0, 0.2)'
+                    : 'rgba(255, 215, 0, 0.1)'
                 }
               }}
               aria-label="Переключить тему"
@@ -196,17 +201,17 @@ const Header = ({ user, balance, onLogout }) => {
             </IconButton>
 
             {/* Кнопка выхода */}
-            <IconButton 
-              onClick={handleLogoutClick} 
-              sx={{ 
+            <IconButton
+              onClick={handleLogoutClick}
+              sx={{
                 color: muiTheme.palette.error.main,
-                bgcolor: muiTheme.palette.mode === 'dark' 
-                  ? 'rgba(231, 76, 60, 0.1)' 
+                bgcolor: muiTheme.palette.mode === 'dark'
+                  ? 'rgba(231, 76, 60, 0.1)'
                   : 'rgba(231, 76, 60, 0.05)',
-                '&:hover': { 
-                  bgcolor: muiTheme.palette.mode === 'dark' 
-                    ? 'rgba(231, 76, 60, 0.2)' 
-                    : 'rgba(231, 76, 60, 0.1)' 
+                '&:hover': {
+                  bgcolor: muiTheme.palette.mode === 'dark'
+                    ? 'rgba(231, 76, 60, 0.2)'
+                    : 'rgba(231, 76, 60, 0.1)'
                 }
               }}
               aria-label="Выйти"
@@ -218,31 +223,31 @@ const Header = ({ user, balance, onLogout }) => {
 
         {/* Мобильная навигация */}
         {isMobile && (
-          <Toolbar sx={{ 
-            justifyContent: 'center', 
+          <Toolbar sx={{
+            justifyContent: 'center',
             borderTop: `1px solid ${muiTheme.palette.divider}`,
             py: 1
           }}>
             <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
               {/* Информация о пользователе на мобилке */}
-              <Chip 
-                icon={<PersonIcon />} 
-                label={user} 
+              <Chip
+                icon={<PersonIcon />}
+                label={user}
                 size="small"
-                sx={{ 
+                sx={{
                   color: muiTheme.palette.primary.main,
-                  bgcolor: muiTheme.palette.mode === 'dark' 
-                    ? 'rgba(102, 126, 234, 0.1)' 
+                  bgcolor: muiTheme.palette.mode === 'dark'
+                    ? 'rgba(102, 126, 234, 0.1)'
                     : 'rgba(102, 126, 234, 0.05)'
-                }} 
+                }}
               />
-              
+             
               {/* Навигация на мобилке */}
-              <Button 
-                component={Link} 
-                to="/" 
+              <Button
+                component={Link}
+                to="/"
                 size="small"
-                sx={{ 
+                sx={{
                   color: muiTheme.palette.text.primary,
                   minWidth: 'auto',
                   fontSize: '0.8rem'
@@ -250,11 +255,11 @@ const Header = ({ user, balance, onLogout }) => {
               >
                 Главная
               </Button>
-              <Button 
-                component={Link} 
-                to="/games" 
+              <Button
+                component={Link}
+                to="/games"
                 size="small"
-                sx={{ 
+                sx={{
                   color: muiTheme.palette.text.primary,
                   minWidth: 'auto',
                   fontSize: '0.8rem'
@@ -262,11 +267,11 @@ const Header = ({ user, balance, onLogout }) => {
               >
                 Игры
               </Button>
-              <Button 
-                component={Link} 
-                to="/about" 
+              <Button
+                component={Link}
+                to="/about"
                 size="small"
-                sx={{ 
+                sx={{
                   color: muiTheme.palette.text.primary,
                   minWidth: 'auto',
                   fontSize: '0.8rem'
@@ -280,15 +285,15 @@ const Header = ({ user, balance, onLogout }) => {
       </AppBar>
 
       {/* Модальное окно подтверждения выхода */}
-      <Dialog 
-        open={openLogoutConfirm} 
+      <Dialog
+        open={openLogoutConfirm}
         onClose={handleCancelLogout}
         aria-labelledby="logout-dialog-title"
         aria-describedby="logout-dialog-description"
       >
-        <DialogTitle 
+        <DialogTitle
           id="logout-dialog-title"
-          sx={{ 
+          sx={{
             bgcolor: muiTheme.palette.mode === 'dark' ? 'rgba(231, 76, 60, 0.1)' : 'rgba(231, 76, 60, 0.05)',
             borderBottom: `1px solid ${muiTheme.palette.divider}`
           }}
@@ -298,7 +303,7 @@ const Header = ({ user, balance, onLogout }) => {
             Подтверждение выхода
           </Box>
         </DialogTitle>
-        
+       
         <DialogContent sx={{ py: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
             <Avatar sx={{ bgcolor: muiTheme.palette.primary.main }}>
@@ -313,15 +318,15 @@ const Header = ({ user, balance, onLogout }) => {
               </Typography>
             </Box>
           </Box>
-          
+         
           <Typography variant="body1" id="logout-dialog-description" sx={{ mb: 2 }}>
             Вы уверены, что хотите выйти из аккаунта?
           </Typography>
-          
-          <Box sx={{ 
-            mt: 3, 
-            p: 2, 
-            bgcolor: muiTheme.palette.mode === 'dark' ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)', 
+         
+          <Box sx={{
+            mt: 3,
+            p: 2,
+            bgcolor: muiTheme.palette.mode === 'dark' ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)',
             borderRadius: 2,
             border: `1px solid ${muiTheme.palette.divider}`
           }}>
@@ -331,7 +336,7 @@ const Header = ({ user, balance, onLogout }) => {
                 Текущий баланс
               </Typography>
             </Box>
-            <Typography variant="h4" sx={{ 
+            <Typography variant="h4" sx={{
               color: muiTheme.palette.success.main,
               fontWeight: 'bold',
               textAlign: 'center'
@@ -343,12 +348,12 @@ const Header = ({ user, balance, onLogout }) => {
             </Typography>
           </Box>
         </DialogContent>
-        
+       
         <DialogActions sx={{ p: 2, borderTop: `1px solid ${muiTheme.palette.divider}` }}>
-          <Button 
+          <Button
             onClick={handleCancelLogout}
             variant="outlined"
-            sx={{ 
+            sx={{
               borderColor: muiTheme.palette.divider,
               color: muiTheme.palette.text.primary,
               '&:hover': {
@@ -358,7 +363,7 @@ const Header = ({ user, balance, onLogout }) => {
           >
             Отмена
           </Button>
-          <Button 
+          <Button
             onClick={handleConfirmLogout}
             variant="contained"
             color="error"
